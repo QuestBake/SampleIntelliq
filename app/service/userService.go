@@ -1,8 +1,8 @@
 package service
 
 import (
-	"pracSpace/restHandler_Gin/app/model"
-	"pracSpace/restHandler_Gin/app/repo"
+	"SampleIntelliq/app/model"
+	"SampleIntelliq/app/repo"
 )
 
 //FindAllUsers address model

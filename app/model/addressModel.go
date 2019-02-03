@@ -1,14 +1,12 @@
 package model
 
-import (
-	"github.com/globalsign/mgo/bson"
-)
+import "github.com/mongodb/mongo-go-driver/bson/primitive"
 
 //Address address model
 type Address struct {
-	ID    bson.ObjectId `json:"_id" bson:"_id,omitempty"`
-	City  string        `json:"city" bson:"city"`
-	State string        `json:"state" bson:"state"`
+	ID    primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	City  string             `json:"city" bson:"city"`
+	State string             `json:"state" bson:"state"`
 }
 
 //Addresses array

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"pracSpace/restHandler_Gin/app/approuter"
-	"pracSpace/restHandler_Gin/app/config"
-
 	"github.com/gin-gonic/gin"
+
+	"SampleIntelliq/app/approuter"
+	"SampleIntelliq/app/config"
 )
 
 var router *gin.Engine

@@ -2,10 +2,11 @@ package service
 
 import (
 	"errors"
-	"pracSpace/restHandler_Gin/app/model"
-	"pracSpace/restHandler_Gin/app/repo"
 
-	"github.com/globalsign/mgo/bson"
+	"github.com/mongodb/mongo-go-driver/bson/primitive"
+
+	"SampleIntelliq/app/model"
+	"SampleIntelliq/app/repo"
 )
 
 //AddAddress add
@@ -35,7 +36,7 @@ func UpdateAddress(address *model.Address) (string, error) {
 }
 
 //RemoveAddress remove
-func RemoveAddress(addressID bson.ObjectId) (string, error) {
+func RemoveAddress(addressID primitive.ObjectID) (string, error) {
 	addrRepo := repo.NewAddressRepository()
 	err := addrRepo.Delete(addressID)
 	if err != nil {
@@ -55,7 +56,7 @@ func FindAddressByCity(city string) (*model.Address, error) {
 }
 
 //FindAddressByID find
-func FindAddressByID(addressID bson.ObjectId) (*model.Address, error) {
+func FindAddressByID(addressID primitive.ObjectID) (*model.Address, error) {
 	addrRepo := repo.NewAddressRepository()
 	address, err := addrRepo.FindByID(addressID)
 	if err != nil {

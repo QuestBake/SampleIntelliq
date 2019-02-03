@@ -1,38 +1,38 @@
 package repo
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	db "pracSpace/restHandler_Gin/app/config"
-	"pracSpace/restHandler_Gin/app/model"
 
-	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
+	"github.com/mongodb/mongo-go-driver/bson"
+	"github.com/mongodb/mongo-go-driver/bson/primitive"
+	"github.com/mongodb/mongo-go-driver/mongo"
+	"github.com/mongodb/mongo-go-driver/mongo/options"
+
+	"SampleIntelliq/app/config"
+	db "SampleIntelliq/app/config"
+	"SampleIntelliq/app/model"
 )
 
 type userRepository struct {
 	db   string
-	coll *mgo.Collection
+	coll *mongo.Collection
 }
 
 //NewUserRepository new object
 func NewUserRepository() *userRepository {
-	coll := db.GetCollection(dbName, "users")
+	coll := db.GetCollection(config.DbName, "users")
 	if coll == nil {
 		return nil
 	}
 	return &userRepository{
-		dbName, coll,
+		config.DbName, coll,
 	}
 }
 
-func (repo *userRepository) closeSession() {
-	repo.coll.Database.Session.Close()
-}
-
 func (repo *userRepository) FindAllAggregate() (model.Users, error) {
-	defer repo.closeSession()
 
 	/*	lookupQ := bson.M{
 			"$lookup": bson.M{
@@ -60,19 +60,25 @@ func (repo *userRepository) FindAllAggregate() (model.Users, error) {
 	}
 
 	pipeline := []bson.M{matchQ, projetcQ}
-
-	pipe := repo.coll.Pipe(pipeline)
-	result := []bson.M{}
 	var users model.Users
-	err := pipe.All(&users)
+	cur, err := repo.coll.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		return users, err
+	}
+	results := []bson.M{}
+	for cur.Next(context.Background()) {
+		var result bson.M
+		cur.Decode(&result)
+		results = append(results, result)
+	}
 	//	err := repo.coll.Find(nil).All(&users)
 
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("result:", result)
+	fmt.Println("result:", results)
 
-	jsonResp, merr := json.Marshal(result)
+	jsonResp, merr := json.Marshal(results)
 	if merr != nil {
 		fmt.Println(err)
 	}
@@ -86,43 +92,55 @@ func (repo *userRepository) FindAllAggregate() (model.Users, error) {
 }
 
 func (repo *userRepository) FindAll() (model.Users, error) {
-	defer repo.closeSession()
 	var users model.Users
-	err := repo.coll.Find(nil).All(&users)
+	cur, err := repo.coll.Find(context.Background(), bson.M{})
 	if err != nil {
 		panic(err)
+	}
+	for cur.Next(context.Background()) {
+		var user model.User
+		cur.Decode(&user)
+		users = append(users, user)
 	}
 	return users, nil
 }
 
 func (repo *userRepository) FindWithRegex() (model.Users, error) {
-	defer repo.closeSession()
+
 	var users model.Users
-	regex := bson.M{"$regex": bson.RegEx{Pattern: "Chinese", Options: "i"}}
-	err := repo.coll.Find(bson.M{"cuisine": regex}).All(&users)
+	regex := bson.M{"$regex": primitive.Regex{Pattern: "Chinese", Options: "i"}}
+	cur, err := repo.coll.Find(context.Background(), bson.M{"cuisine": regex})
 	if err != nil {
 		panic(err)
+	}
+	for cur.Next(context.Background()) {
+		var user model.User
+		cur.Decode(&user)
+		users = append(users, user)
 	}
 	return users, nil
 }
 
 func (repo *userRepository) FindAllWithSelect() (model.Users, error) {
-	defer repo.closeSession()
 	var users model.Users
 
 	filter := bson.M{"name": "Raghav"}
 	cols := bson.M{"name": 1, "cuisine": 1, "_id": 0}
-
-	err := repo.coll.Find(filter).Select(cols).All(&users)
+	options := options.Find().SetProjection(cols)
+	cur, err := repo.coll.Find(context.Background(), filter, options)
 	if err != nil {
 		panic(err)
+	}
+	for cur.Next(context.Background()) {
+		var user model.User
+		cur.Decode(&user)
+		users = append(users, user)
 	}
 	return users, nil
 }
 
 func (repo *userRepository) FindByNameAndMobile(user *model.User) (*model.User, error) {
-	defer repo.closeSession()
-	regexName := bson.M{"$regex": bson.RegEx{Pattern: user.Name, Options: "i"}}
+	regexName := bson.M{"$regex": primitive.Regex{Pattern: user.Name, Options: "i"}}
 	andFilter := bson.M{"$and": []bson.M{
 		{
 			"name": regexName,
@@ -133,7 +151,7 @@ func (repo *userRepository) FindByNameAndMobile(user *model.User) (*model.User, 
 	},
 	}
 	var loggedUser model.User
-	err := repo.coll.Find(andFilter).One(&loggedUser)
+	err := repo.coll.FindOne(context.Background(), andFilter).Decode(&loggedUser)
 	if err != nil {
 		return nil, errors.New("Invalid credentials")
 	}
@@ -141,16 +159,24 @@ func (repo *userRepository) FindByNameAndMobile(user *model.User) (*model.User, 
 }
 
 func (repo *userRepository) SearchByIndex(term string) (model.Users, error) {
-	defer repo.closeSession()
 	var users model.Users
 	query := bson.M{
 		"$text": bson.M{
 			"$search": term,
 		},
 	}
-	err := repo.coll.Find(query).All(&users)
+	ctx := context.Background()
+	cur, err := repo.coll.Find(ctx, query)
 	if err != nil {
 		panic(err)
+	}
+	for cur.Next(ctx) {
+		var user model.User
+		err := cur.Decode(&cur)
+		if err != nil {
+			panic(err)
+		}
+		users = append(users, user)
 	}
 	return users, nil
 }

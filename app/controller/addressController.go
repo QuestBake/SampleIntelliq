@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"log"
 	"net/http"
-	"pracSpace/restHandler_Gin/app/model"
-	"pracSpace/restHandler_Gin/app/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/globalsign/mgo/bson"
+	"github.com/mongodb/mongo-go-driver/bson/primitive"
+
+	"SampleIntelliq/app/model"
+	"SampleIntelliq/app/service"
 )
 
 //AddAddress all
@@ -36,7 +38,11 @@ func UpdateAddress(ctx *gin.Context) {
 //RemoveAddress all
 func RemoveAddress(ctx *gin.Context) {
 	addressID := ctx.Param("address_id")
-	res, err := service.RemoveAddress(bson.ObjectIdHex(addressID))
+	id, err := primitive.ObjectIDFromHex(addressID)
+	if err != nil {
+		log.Print("Error while converting address to objectId")
+	}
+	res, err := service.RemoveAddress(id)
 	if err != nil {
 		ctx.JSON(http.StatusOK, &model.AppResponse{Status: 400, Body: nil, Msg: err.Error()})
 		return

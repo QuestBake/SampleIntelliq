@@ -1,9 +1,9 @@
 package approuter
 
 import (
-	"pracSpace/restHandler_Gin/app/controller"
-
 	"github.com/gin-gonic/gin"
+
+	"SampleIntelliq/app/controller"
 )
 
 var mrouter *gin.Engine

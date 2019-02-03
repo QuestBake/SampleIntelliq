@@ -2,10 +2,11 @@ package controller
 
 import (
 	"net/http"
-	"pracSpace/restHandler_Gin/app/model"
-	"pracSpace/restHandler_Gin/app/service"
 
 	"github.com/gin-gonic/gin"
+
+	"SampleIntelliq/app/model"
+	"SampleIntelliq/app/service"
 )
 
 //TestHandler test

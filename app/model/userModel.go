@@ -1,17 +1,17 @@
 package model
 
-import "github.com/globalsign/mgo/bson"
+import "github.com/mongodb/mongo-go-driver/bson/primitive"
 
 //User user model
 type User struct {
-	ID        bson.ObjectId `json:"_id" bson:"_id,omitempty"`
-	Name      string        `json:"name" bson:"name"`
-	Age       int16         `json:"age" bson:"age"`
-	Mobile    string        `json:"mobile" bson:"mobile"`
-	Gender    string        `json:"gender" bson:"gender"`
-	Cuisine   []string      `json:"cuisine" bson:"cuisine"`
-	Education []education   `json:"education" bson:"education"`
-	Address   Address       `json:"address" bson:"address"`
+	ID        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Name      string             `json:"name" bson:"name"`
+	Age       int16              `json:"age" bson:"age"`
+	Mobile    string             `json:"mobile" bson:"mobile"`
+	Gender    string             `json:"gender" bson:"gender"`
+	Cuisine   []string           `json:"cuisine" bson:"cuisine"`
+	Education []education        `json:"education" bson:"education"`
+	Address   Address            `json:"address" bson:"address"`
 }
 
 type education struct {
